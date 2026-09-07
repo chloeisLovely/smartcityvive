@@ -8,4 +8,4 @@
    var API_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
 */
 
-var API_URL = '여기에 Apps Script 웹앱 주소를 붙여넣으세요';
+var API_URL = 'https://script.google.com/macros/s/AKfycbwkUlz294f-dS1zuJ4SJwqy1JkeUQkVJfoOSJn7y65BqZ6WoaVPtresUtcIp6rNef5g/exec';
