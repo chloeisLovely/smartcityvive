@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>내가 없애고 싶은 일 — 고양 스마트시티즌</title>
+<meta name="description" content="가장 반복적이고 시간이 오래 걸리는 업무를 골라 주세요.">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+:root{
+  --ink:#10193F; --ink2:#1B2A5B; --paper:#F7F8FB; --line:#DFE4EE;
+  --body:#3B4257; --mute:#858CA0; --coral:#E8455C; --gold:#E39A28; --mint:#2FB98A;
+  --fs:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:var(--fs);background:var(--paper);color:var(--body);-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input{font-family:inherit}
+:focus-visible{outline:3px solid var(--coral);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+#join{min-height:100dvh;display:flex;flex-direction:column;padding:28px 20px 40px;max-width:720px;margin:0 auto}
+.eyebrow{font-size:13px;font-weight:700;color:var(--coral)}
+.q{font-size:clamp(25px,6vw,37px);font-weight:800;color:var(--ink);line-height:1.32;letter-spacing:-.025em;margin:10px 0 6px}
+.q em{font-style:normal;background:linear-gradient(transparent 62%,#FFD9DE 62%)}
+.hint{font-size:14.5px;color:var(--mute);line-height:1.6;margin-bottom:20px}
+.chips{display:flex;flex-wrap:wrap;gap:9px}
+.chip{border:1.5px solid var(--line);background:#fff;color:var(--body);padding:13px 17px;border-radius:13px;
+  font-size:16px;font-weight:600;line-height:1;transition:transform .12s,background .12s,border-color .12s,color .12s}
+.chip:active{transform:scale(.95)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip.own[aria-pressed="true"]{background:var(--coral);border-color:var(--coral)}
+.addrow{display:flex;gap:8px;margin-top:16px}
+.addrow input{flex:1;min-width:0;border:1.5px dashed #C4CBDA;background:transparent;border-radius:13px;padding:13px 16px;font-size:16px;color:var(--ink)}
+.addrow input:focus{border-style:solid;border-color:var(--ink2);background:#fff;outline:none}
+.addbtn{border:1.5px solid var(--ink);border-radius:13px;padding:0 18px;font-size:15px;font-weight:700;color:var(--ink);background:#fff}
+.addbtn:disabled{opacity:.35;cursor:default}
+.foot{margin-top:26px}
+.count{font-size:14px;color:var(--mute);margin-bottom:10px;min-height:20px}
+.count b{color:var(--ink);font-weight:800}
+.send{width:100%;background:var(--coral);color:#fff;border-radius:15px;padding:19px;font-size:18px;font-weight:800;
+  box-shadow:0 6px 0 #B92E43;transition:transform .1s,box-shadow .1s}
+.send:active{transform:translateY(4px);box-shadow:0 2px 0 #B92E43}
+.send:disabled{background:#D5DAE4;color:#8E96A8;box-shadow:0 6px 0 #C0C6D3;cursor:default}
+.warn{margin-top:14px;background:#FDF3E0;border:1px solid var(--gold);border-radius:12px;padding:12px 15px;
+  font-size:13px;color:#8A5A10;line-height:1.6;display:none}
+
+#done{min-height:100dvh;display:none;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:34px 24px;background:var(--ink);color:#fff}
+.mark{width:76px;height:76px;border-radius:50%;background:var(--mint);display:grid;place-items:center;font-size:38px;
+  animation:pop .45s cubic-bezier(.2,1.5,.4,1)}
+@keyframes pop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
+#done h2{font-size:30px;font-weight:800;margin:22px 0 8px}
+#done p{color:#A9B4D2;font-size:15px;line-height:1.65;max-width:34ch}
+.mine{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:26px 0 30px;max-width:520px}
+.mine span{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);padding:9px 15px;border-radius:11px;font-size:15px;font-weight:600;color:#fff}
+.again{border:1.5px solid rgba(255,255,255,.35);color:#fff;border-radius:13px;padding:14px 26px;font-size:15.5px;font-weight:700}
+.toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(90px);background:var(--ink);color:#fff;
+  padding:13px 22px;border-radius:12px;font-size:14px;font-weight:600;transition:transform .3s cubic-bezier(.2,1.2,.4,1);
+  z-index:99;max-width:88vw;text-align:center;line-height:1.5}
+.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<section id="join">
+  <div class="eyebrow">1회차 · 시작하기 전에</div>
+  <h1 class="q">내 업무에서 가장 <em>반복적이고</em><br>시간이 오래 걸리는 일은?</h1>
+  <p class="hint">해당하는 것을 눌러 주세요. 여러 개 골라도 됩니다.<br>없으면 아래에 직접 적어 주세요.</p>
+
+  <div class="chips" id="chips"></div>
+
+  <div class="addrow">
+    <input id="own" placeholder="여기에 직접 적기" maxlength="14" autocomplete="off" enterkeyhint="done">
+    <button class="addbtn" id="ownAdd" disabled>추가</button>
+  </div>
+
+  <div class="foot">
+    <div class="count" id="cnt"></div>
+    <button class="send" id="send" disabled>보내기</button>
+    <div class="warn" id="warn"></div>
+  </div>
+</section>
+
+<section id="done">
+  <div class="mark">✓</div>
+  <h2>보냈습니다</h2>
+  <p>앞 화면에 여러분의 답이 모이고 있습니다.<br>오늘 6시간은 바로 이 일을 줄이는 시간입니다.</p>
+  <div class="mine" id="mine"></div>
+  <button class="again" id="again">하나 더 고르기</button>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script>
+var PRESET = ['엑셀 취합','보고서 작성','회의록 정리','메일 회신','자료 찾기','일정 조율',
+  '실적 집계','데이터 입력','공문 기안','민원 응대','결재 문서','통계 작성','일정 알림','자료 정리'];
+
+var $ = function(s){ return document.querySelector(s); };
+var picked = new Set(), mineAll = new Set();
+var cid = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+function esc(s){ return String(s).replace(/[&<>"']/g, function(m){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
+
+function drawChips(){
+  var box = $('#chips'); box.innerHTML = '';
+  var extra = [];
+  mineAll.forEach(function(w){ if (PRESET.indexOf(w) < 0) extra.push(w); });
+  PRESET.concat(extra).forEach(function(w){
+    var b = document.createElement('button');
+    b.className = 'chip' + (PRESET.indexOf(w) < 0 ? ' own' : '');
+    b.textContent = w;
+    b.setAttribute('aria-pressed', picked.has(w));
+    b.onclick = function(){ picked.has(w) ? picked.delete(w) : picked.add(w); drawChips(); sync(); };
+    box.appendChild(b);
+  });
+}
+function sync(){
+  var n = picked.size;
+  $('#cnt').innerHTML = n ? '<b>' + n + '개</b> 고르셨습니다' : '하나 이상 골라 주세요';
+  $('#send').disabled = !n;
+  $('#send').textContent = n ? n + '개 보내기' : '보내기';
+}
+$('#own').addEventListener('input', function(e){ $('#ownAdd').disabled = !e.target.value.trim(); });
+$('#own').addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); addOwn(); } });
+$('#ownAdd').onclick = addOwn;
+function addOwn(){
+  var v = $('#own').value.trim().replace(/\s+/g,' ');
+  if (!v) return;
+  mineAll.add(v); picked.add(v);
+  $('#own').value = ''; $('#ownAdd').disabled = true;
+  drawChips(); sync(); toast('"' + v + '" 추가했습니다');
+}
+
+$('#send').onclick = function(){
+  var words = [];
+  picked.forEach(function(w){ words.push(w); });
+  $('#send').disabled = true; $('#send').textContent = '보내는 중…';
+
+  if (!window.API_URL || API_URL.indexOf('여기에') > -1){
+    fail('수집 주소가 설정되지 않았습니다. config.js 를 확인해 주세요.');
+    return;
+  }
+  var url = API_URL + '?action=submit&id=' + encodeURIComponent(cid) +
+            '&words=' + encodeURIComponent(words.join('|'));
+
+  fetch(url)
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || !d.ok) throw new Error((d && d.error) || '저장 실패');
+      $('#mine').innerHTML = words.map(function(w){ return '<span>' + esc(w) + '</span>'; }).join('');
+      $('#join').style.display = 'none';
+      $('#done').style.display = 'flex';
+    })
+    .catch(function(e){ fail('전송에 실패했습니다. 다시 눌러 주세요. (' + e.message + ')'); });
+};
+function fail(msg){
+  $('#warn').style.display = 'block';
+  $('#warn').textContent = msg;
+  $('#send').disabled = false; sync();
+}
+$('#again').onclick = function(){
+  picked.clear();
+  cid = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+  $('#done').style.display = 'none'; $('#join').style.display = 'flex';
+  $('#warn').style.display = 'none';
+  drawChips(); sync(); window.scrollTo(0,0);
+};
+
+var tt;
+function toast(m){
+  var e = $('#toast'); e.textContent = m; e.classList.add('show');
+  clearTimeout(tt); tt = setTimeout(function(){ e.classList.remove('show'); }, 2600);
+}
+
+drawChips(); sync();
+</script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>강사 화면 — 실시간 워드클라우드</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+:root{
+  --ink:#10193F; --coral:#E8455C; --gold:#E39A28; --mint:#2FB98A;
+  --fs:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:var(--fs);background:var(--ink);color:#fff;-webkit-font-smoothing:antialiased;
+  display:flex;flex-direction:column;min-height:100dvh}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input{font-family:inherit}
+:focus-visible{outline:3px solid var(--coral);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.tbar{display:flex;align-items:center;gap:20px;padding:14px 22px;border-bottom:1px solid rgba(255,255,255,.1);flex-wrap:wrap}
+.stat{display:flex;align-items:baseline;gap:7px}
+.stat b{font-size:29px;font-weight:800;font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:#8E9BC0}
+.sp{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tbtn{border:1px solid rgba(255,255,255,.24);color:#D5DCEF;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600}
+.tbtn:hover{background:rgba(255,255,255,.09)}
+.tbtn.on{background:var(--mint);border-color:var(--mint);color:#04301F}
+.tbtn.danger:hover{background:var(--coral);border-color:var(--coral);color:#fff}
+.mode{display:flex;align-items:center;gap:7px;font-size:12.5px;padding:7px 12px;border-radius:9px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:#B6C1DC}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mint);flex:none}
+.dot.warn{background:var(--gold)}
+.dot.bad{background:var(--coral)}
+
+#cloud{flex:1;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:4px 28px;padding:40px 4vw;min-height:50vh}
+.w{font-weight:800;letter-spacing:-.035em;line-height:1.06;white-space:nowrap;animation:rise .5s cubic-bezier(.2,.9,.3,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:none}}
+.w .n{font-size:.34em;font-weight:700;opacity:.5;margin-left:.2em;vertical-align:super}
+.empty{text-align:center;color:#6E7CA6;font-size:16px;line-height:1.85}
+.empty b{display:block;color:#fff;font-size:22px;font-weight:800;margin-bottom:10px}
+.empty code{background:rgba(255,255,255,.09);padding:4px 9px;border-radius:6px;color:#D5DCEF;font-size:14px}
+
+.rank{border-top:1px solid rgba(255,255,255,.1);padding:15px 22px 18px;display:flex;gap:26px;flex-wrap:wrap;min-height:18px}
+.rk{flex:1;min-width:170px}
+.rk-t{display:flex;justify-content:space-between;font-size:14px;font-weight:700;margin-bottom:6px}
+.rk-t i{font-style:normal;color:#8E9BC0;font-weight:600;font-variant-numeric:tabular-nums}
+.bar{height:6px;background:rgba(255,255,255,.13);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px;transition:width .5s cubic-bezier(.2,.9,.3,1)}
+.linkbar{display:flex;align-items:center;gap:12px;padding:12px 22px 20px;font-size:12.5px;color:#8E9BC0;flex-wrap:wrap}
+.linkbar code{background:rgba(255,255,255,.09);padding:7px 11px;border-radius:8px;color:#D5DCEF;
+  max-width:min(560px,66vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(90px);background:#0B1230;color:#fff;
+  border:1px solid rgba(255,255,255,.2);padding:13px 22px;border-radius:12px;font-size:14px;font-weight:600;
+  transition:transform .3s cubic-bezier(.2,1.2,.4,1);z-index:99;max-width:88vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="tbar">
+  <div class="stat"><b id="sPeople">0</b><span>명</span></div>
+  <div class="stat"><b id="sAns">0</b><span>개 응답</span></div>
+  <div class="stat"><b id="sKind">0</b><span>가지</span></div>
+  <div class="sp">
+    <span class="mode"><i class="dot" id="dot"></i><span id="modeTxt">연결 확인 중</span></span>
+    <button class="tbtn on" id="autoBtn">자동 갱신 켜짐</button>
+    <button class="tbtn" id="nowBtn">새로고침</button>
+    <button class="tbtn danger" id="clearBtn">전체 지우기</button>
+  </div>
+</div>
+
+<div id="cloud"></div>
+<div class="rank" id="rank"></div>
+
+<div class="linkbar">
+  <span>교육생에게 알려줄 주소</span>
+  <code id="stuLink">—</code>
+  <button class="tbtn" id="copyLink">복사</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script>
+var HUE = ['#E8455C','#E39A28','#2FB98A','#7C7BE0','#4FA8E0','#F2789A','#C9A227','#57C7A9','#F2A65A','#6FD3B8'];
+var $ = function(s){ return document.querySelector(s); };
+var seen = {}, timer = null, auto = true, busy = false;
+
+function esc(s){ return String(s).replace(/[&<>"']/g, function(m){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
+
+function setMode(cls, txt){
+  $('#dot').className = 'dot' + (cls ? ' ' + cls : '');
+  $('#modeTxt').textContent = txt;
+}
+
+function pull(){
+  if (busy) return;
+  if (!window.API_URL || API_URL.indexOf('여기에') > -1){
+    setMode('bad', 'config.js 미설정'); return;
+  }
+  busy = true;
+  fetch(API_URL + '?action=list&t=' + Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || !d.ok) throw new Error((d && d.error) || '응답 오류');
+      setMode('', '실시간 연결됨');
+      render(d);
+    })
+    .catch(function(e){ setMode('warn', '연결 확인 중 (' + e.message + ')'); })
+    .then(function(){ busy = false; });
+}
+
+function render(d){
+  var tally = d.tally || {};
+  var keys = Object.keys(tally);
+  $('#sPeople').textContent = d.people || 0;
+  $('#sAns').textContent = d.answers || 0;
+  $('#sKind').textContent = keys.length;
+
+  var cloud = $('#cloud');
+  if (!keys.length){
+    cloud.innerHTML = '<div class="empty"><b>아직 응답이 없습니다</b>' +
+      '교육생이 아래 주소로 들어와 버튼을 누르면<br>여기에 실시간으로 나타납니다.</div>';
+    $('#rank').innerHTML = ''; seen = {}; return;
+  }
+
+  var sorted = keys.map(function(k){ return [k, tally[k]]; })
+                   .sort(function(a,b){ return b[1] - a[1]; });
+  var max = sorted[0][1], min = sorted[sorted.length-1][1];
+
+  // 큰 단어를 가운데로 모읍니다
+  var laid = [];
+  sorted.forEach(function(it,i){ i % 2 ? laid.push(it) : laid.unshift(it); });
+
+  cloud.innerHTML = '';
+  laid.forEach(function(p){
+    var w = p[0], c = p[1];
+    var t = (max === min) ? 1 : (c - min) / (max - min);
+    var rem = 1.5 + t * 4.4;
+    var el = document.createElement('span');
+    el.className = 'w';
+    el.style.fontSize = 'clamp(' + (rem*0.55).toFixed(2) + 'rem, ' + (rem*1.45).toFixed(1) + 'vw, ' + rem.toFixed(2) + 'rem)';
+    el.style.color = HUE[keys.indexOf(w) % HUE.length];
+    el.style.opacity = (0.58 + t*0.42).toFixed(2);
+    el.innerHTML = esc(w) + (c > 1 ? '<span class="n">' + c + '</span>' : '');
+    if (seen[w] === c) el.style.animation = 'none';
+    cloud.appendChild(el);
+  });
+  seen = {};
+  sorted.forEach(function(p){ seen[p[0]] = p[1]; });
+
+  $('#rank').innerHTML = sorted.slice(0,4).map(function(p,i){
+    return '<div class="rk"><div class="rk-t"><span>' + esc(p[0]) + '</span><i>' + p[1] + '명</i></div>' +
+      '<div class="bar"><i style="width:' + (p[1]/max*100).toFixed(0) + '%;background:' + HUE[i%HUE.length] + '"></i></div></div>';
+  }).join('');
+}
+
+function start(){ pull(); if (auto && !timer) timer = setInterval(pull, 4000); }
+function stop(){ clearInterval(timer); timer = null; }
+
+$('#autoBtn').onclick = function(e){
+  auto = !auto;
+  e.target.classList.toggle('on', auto);
+  e.target.textContent = auto ? '자동 갱신 켜짐' : '자동 갱신 꺼짐';
+  auto ? start() : stop();
+};
+$('#nowBtn').onclick = pull;
+$('#clearBtn').onclick = function(){
+  var pin = prompt('모아둔 응답을 모두 지웁니다.\n비밀번호를 입력하세요.');
+  if (!pin) return;
+  fetch(API_URL + '?action=clear&pin=' + encodeURIComponent(pin))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d && d.ok){ seen = {}; toast('모두 지웠습니다'); pull(); }
+      else toast((d && d.error) || '지우지 못했습니다');
+    })
+    .catch(function(e){ toast('오류: ' + e.message); });
+};
+
+var stuUrl = location.href.replace(/teacher\.html.*$/, '');
+$('#stuLink').textContent = stuUrl;
+$('#copyLink').onclick = function(){
+  navigator.clipboard.writeText(stuUrl)
+    .then(function(){ toast('교육생용 주소를 복사했습니다'); })
+    .catch(function(){ toast('주소창에서 직접 복사해 주세요'); });
+};
+
+var tt;
+function toast(m){
+  var e = $('#toast'); e.textContent = m; e.classList.add('show');
+  clearTimeout(tt); tt = setTimeout(function(){ e.classList.remove('show'); }, 2800);
+}
+
+render({ tally: {}, people: 0, answers: 0 });
+start();
+</script>
+</body>
+</html>
